@@ -16,6 +16,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	// This section is just for tests
 	fmt.Fprintf(os.Stdout, "%v\n", os.Args[1])
 }
