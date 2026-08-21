@@ -1,15 +1,11 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 )
 
 func main() {
-	flag.String("username", "", "A valid user-name in GitHub")
-
-	flag.Parse()
 
 	if len(os.Args) != 2 {
 		if len(os.Args) > 2 {
