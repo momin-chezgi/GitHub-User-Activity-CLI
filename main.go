@@ -21,6 +21,7 @@ func main() {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
+		os.Exit(1)
 	}
 
 	req.Header.Set("User-Agent", "github-user-activity")
@@ -33,8 +34,8 @@ func main() {
 
 	defer resp.Body.Close()
 
-	if connStat := checkStat(resp.StatusCode); connStat != nil {
-		fmt.Fprintf(os.Stderr, connStat.Error())
+	if resp.StatusCode != http.StatusOK {
+		fmt.Fprintf(os.Stderr, "An error accured with the status code %v", resp.StatusCode)
 		os.Exit(1)
 	}
 
@@ -59,22 +60,6 @@ func userName() (string, error) {
 		return "", err
 	}
 	return os.Args[neededArgs], nil
-}
-
-func checkStat(sc int) error {
-	sc /= 100
-	switch sc {
-	case 1:
-		return errors.New("Informational error")
-	case 3:
-		return errors.New("Redirecting")
-	case 4:
-		return errors.New("Client error")
-	case 5:
-		return errors.New("Server error")
-	default:
-		return nil
-	}
 }
 
 func urlMaker(userName string) string {
