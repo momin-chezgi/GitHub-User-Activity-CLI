@@ -35,7 +35,7 @@ func main() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Fprintf(os.Stderr, "An error accured with the status code %v", resp.StatusCode)
+		fmt.Fprintf(os.Stderr, "An error occured with the status code %v\n", resp.StatusCode)
 		os.Exit(1)
 	}
 
@@ -45,14 +45,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf(string(bodyBytes))
+	fmt.Print(string(bodyBytes))
 }
 
 func userName() (string, error) {
 	if len(os.Args) != neededArgs+1 {
 		var errMessage string
 		if len(os.Args) > neededArgs+1 {
-			errMessage = fmt.Sprintf("Too much arguments: needed %v, given %v\n", neededArgs, len(os.Args)-1)
+			errMessage = fmt.Sprintf("Too many arguments: needed %v, given %v\n", neededArgs, len(os.Args)-1)
 		} else {
 			errMessage = fmt.Sprintf("Too few arguments: needed %v, given %v\n", neededArgs, len(os.Args)-1)
 		}
