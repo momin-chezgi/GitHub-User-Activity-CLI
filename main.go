@@ -35,7 +35,7 @@ func main() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Fprintf(os.Stderr, "An error occured with the status code %v\n", resp.StatusCode)
+		fmt.Fprintf(os.Stderr, "An error occurred with the status code %v\n", resp.StatusCode)
 		os.Exit(1)
 	}
 
