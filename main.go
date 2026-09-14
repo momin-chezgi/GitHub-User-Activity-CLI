@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const neededArgs = 1
@@ -57,11 +58,11 @@ func main() {
 		case "PushEvent":
 			fmt.Printf("- Pushed commits to		%v\n", e.Repo.Name)
 		case "IssuesEvent":
-			fmt.Printf("- %v an issue in		%v\n", e.Payload.Action, e.Repo.Name)
+			fmt.Printf("- %v an issue in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
 		case "WatchEvent":
-			fmt.Printf("- The user starred		%v\n", e.Repo.Name)
+			fmt.Printf("- Starred		%v\n", e.Repo.Name)
 		case "PullRequestEvent":
-			fmt.Printf("- %v a pull request in		%v\n", e.Payload.Action, e.Repo.Name)
+			fmt.Printf("- %v a pull request in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
 		case "CreateEvent":
 			fmt.Printf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
 		case "DeleteEvent":
@@ -71,7 +72,7 @@ func main() {
 		case "IssueCommentEvent":
 			fmt.Printf("- Commented on an issue in		%v\n", e.Repo.Name)
 		default:
-			fmt.Printf("- Any other action was happened\n")
+			fmt.Printf("- Other activity in %v \n", e.Repo.Name)
 		}
 	}
 }
@@ -88,10 +89,6 @@ func userName() (string, error) {
 		return "", err
 	}
 	return os.Args[neededArgs], nil
-}
-
-func urlMaker(userName string) string {
-	return fmt.Sprintf("https://api.github.com/users/%v/events", userName)
 }
 
 func getActivity(userName string) ([]byte, error) {
@@ -119,4 +116,15 @@ func getActivity(userName string) ([]byte, error) {
 		return nil, err
 	}
 	return out, nil
+}
+
+func urlMaker(userName string) string {
+	return fmt.Sprintf("https://api.github.com/users/%v/events", userName)
+}
+
+func capitalise(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
 }
