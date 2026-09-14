@@ -53,28 +53,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	for _, e := range events {
-		switch e.Type {
-		case "PushEvent":
-			fmt.Printf("- Pushed commits to		%v\n", e.Repo.Name)
-		case "IssuesEvent":
-			fmt.Printf("- %v an issue in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
-		case "WatchEvent":
-			fmt.Printf("- Starred		%v\n", e.Repo.Name)
-		case "PullRequestEvent":
-			fmt.Printf("- %v a pull request in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
-		case "CreateEvent":
-			fmt.Printf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
-		case "DeleteEvent":
-			fmt.Printf("- Deleted a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
-		case "ForkEvent":
-			fmt.Printf("- Forked		%v\n", e.Repo.Name)
-		case "IssueCommentEvent":
-			fmt.Printf("- Commented on an issue in		%v\n", e.Repo.Name)
-		default:
-			fmt.Printf("- Other activity in %v \n", e.Repo.Name)
-		}
-	}
+	fmt.Printf(eventSprinter(events))
 }
 
 func userName() (string, error) {
@@ -85,8 +64,7 @@ func userName() (string, error) {
 		} else {
 			errMessage = fmt.Sprintf("Too few arguments: needed %v, given %v\n", neededArgs, len(os.Args)-1)
 		}
-		err := errors.New(errMessage)
-		return "", err
+		return "", errors.New(errMessage)
 	}
 	return os.Args[neededArgs], nil
 }
@@ -95,14 +73,14 @@ func getActivity(userName string) ([]byte, error) {
 	url := urlMaker(userName)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Failed to send the request!\n")
 	}
 
 	req.Header.Set("User-Agent", "github-user-activity")
 
 	resp, err := http.DefaultClient.Do(req)
 	if resp == nil {
-		return nil, err
+		return nil, errors.New("Connection failed!\n")
 	}
 
 	defer resp.Body.Close()
@@ -113,9 +91,35 @@ func getActivity(userName string) ([]byte, error) {
 
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("An error occurred at reading the response body!\n")
 	}
 	return out, nil
+}
+
+func eventSprinter(events []Event) string {
+	for _, e := range events {
+		switch e.Type {
+		case "PushEvent":
+			return fmt.Sprintf("- Pushed commits to		%v\n", e.Repo.Name)
+		case "IssuesEvent":
+			return fmt.Sprintf("- %v an issue in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
+		case "WatchEvent":
+			return fmt.Sprintf("- Starred		%v\n", e.Repo.Name)
+		case "PullRequestEvent":
+			return fmt.Sprintf("- %v a pull request in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
+		case "CreateEvent":
+			return fmt.Sprintf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
+		case "DeleteEvent":
+			return fmt.Sprintf("- Deleted a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
+		case "ForkEvent":
+			return fmt.Sprintf("- Forked		%v\n", e.Repo.Name)
+		case "IssueCommentEvent":
+			return fmt.Sprintf("- Commented on an issue in		%v\n", e.Repo.Name)
+		default:
+			return fmt.Sprintf("- Other activity in %v \n", e.Repo.Name)
+		}
+	}
+	return ""
 }
 
 func urlMaker(userName string) string {
