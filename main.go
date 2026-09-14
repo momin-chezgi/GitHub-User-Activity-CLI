@@ -55,21 +55,21 @@ func main() {
 	for _, e := range events {
 		switch e.Type {
 		case "PushEvent":
-			fmt.Printf("- Pushed commits to %v\n", e.Repo.Name)
+			fmt.Printf("- Pushed commits to		%v\n", e.Repo.Name)
 		case "IssuesEvent":
-			fmt.Printf("- %v an issue\n", e.Payload.Action)
+			fmt.Printf("- %v an issue in		%v\n", e.Payload.Action, e.Repo.Name)
 		case "WatchEvent":
-			fmt.Printf("- The user starred %v repo\n", e.Repo.Name)
+			fmt.Printf("- The user starred		%v\n", e.Repo.Name)
 		case "PullRequestEvent":
-			fmt.Printf("- %v a pull request\n", e.Payload.Action)
+			fmt.Printf("- %v a pull request in		%v\n", e.Payload.Action, e.Repo.Name)
 		case "CreateEvent":
-			fmt.Printf("- Created a %v\n", e.Payload.RefType)
+			fmt.Printf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
 		case "DeleteEvent":
-			fmt.Printf("- Deleted a %v\n", e.Payload.RefType)
+			fmt.Printf("- Deleted a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
 		case "ForkEvent":
-			fmt.Printf("- Forked a repo\n")
+			fmt.Printf("- Forked		%v\n", e.Repo.Name)
 		case "IssueCommentEvent":
-			fmt.Printf("- Commented on an issue\n")
+			fmt.Printf("- Commented on an issue in		%v\n", e.Repo.Name)
 		default:
 			fmt.Printf("- Any other action was happened\n")
 		}
