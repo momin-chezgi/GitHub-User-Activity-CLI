@@ -12,13 +12,24 @@ import (
 const neededArgs = 1
 
 type Event struct {
-	Type string `json:"type"`
-	Repo Repo   `json:"repo"`
+	Type      string  `json:"type"`
+	Repo      Repo    `json:"repo"`
+	Actor     Actor   `json:"actor"`
+	CreatedAt string  `json:"created_at"`
+	Payload   Payload `json:"payload"`
 }
 
 type Repo struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
+}
+
+type Payload struct {
+	Action string `json:"action"`
+}
+
+type Actor struct {
+	Login string `json:"login"`
 }
 
 func main() {
@@ -41,7 +52,24 @@ func main() {
 	}
 
 	for _, e := range events {
-		fmt.Printf("%s: %s, (%s)\n", e.Type, e.Repo.Name, e.Repo.URL)
+		switch e.Type {
+		case "PushEvent":
+			fmt.Printf("- Pushed a commit at (%v)\n", e.CreatedAt)
+		case "IssuesEvent":
+			fmt.Printf("- Opened/closed an issue at (%v)\n", e.CreatedAt)
+		case "WatchEvent":
+			fmt.Printf("- The user starred a repo/user at (%v)\n", e.CreatedAt)
+		case "PullRequestEvent":
+			fmt.Printf("- Opened/closed a pull request at (%v)\n", e.CreatedAt)
+		case "CreateEvent":
+			fmt.Printf("- Created a branch, tag, etc at (%v)\n", e.CreatedAt)
+		case "DeleteEvent":
+			fmt.Printf("- Deleted a branch, tag, etc at (%v)\n", e.CreatedAt)
+		case "ForkEvent":
+			fmt.Printf("- Forked a repo at (%v)\n", e.CreatedAt)
+		case "IssueCommentEvent":
+			fmt.Printf("- Commented on an issue at (%v)\n", e.CreatedAt)
+		}
 	}
 }
 
@@ -75,11 +103,13 @@ func getActivity(userName string) ([]byte, error) {
 	resp, err := http.DefaultClient.Do(req)
 	if resp == nil {
 		return nil, err
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("An error occurred with the status code %v\n", resp.StatusCode))
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("An error occurred with the status code %v\n", resp.StatusCode))
+	}
 
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
