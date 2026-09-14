@@ -25,7 +25,8 @@ type Repo struct {
 }
 
 type Payload struct {
-	Action string `json:"action"`
+	Action  string `json:"action"`
+	RefType string `json:"ref_type"`
 }
 
 type Actor struct {
@@ -54,21 +55,23 @@ func main() {
 	for _, e := range events {
 		switch e.Type {
 		case "PushEvent":
-			fmt.Printf("- Pushed a commit at (%v)\n", e.CreatedAt)
+			fmt.Printf("- Pushed commits to %v\n", e.Repo.Name)
 		case "IssuesEvent":
-			fmt.Printf("- Opened/closed an issue at (%v)\n", e.CreatedAt)
+			fmt.Printf("- %v an issue\n", e.Payload.Action)
 		case "WatchEvent":
-			fmt.Printf("- The user starred a repo/user at (%v)\n", e.CreatedAt)
+			fmt.Printf("- The user starred %v repo\n", e.Repo.Name)
 		case "PullRequestEvent":
-			fmt.Printf("- Opened/closed a pull request at (%v)\n", e.CreatedAt)
+			fmt.Printf("- %v a pull request\n", e.Payload.Action)
 		case "CreateEvent":
-			fmt.Printf("- Created a branch, tag, etc at (%v)\n", e.CreatedAt)
+			fmt.Printf("- Created a %v\n", e.Payload.RefType)
 		case "DeleteEvent":
-			fmt.Printf("- Deleted a branch, tag, etc at (%v)\n", e.CreatedAt)
+			fmt.Printf("- Deleted a %v\n", e.Payload.RefType)
 		case "ForkEvent":
-			fmt.Printf("- Forked a repo at (%v)\n", e.CreatedAt)
+			fmt.Printf("- Forked a repo\n")
 		case "IssueCommentEvent":
-			fmt.Printf("- Commented on an issue at (%v)\n", e.CreatedAt)
+			fmt.Printf("- Commented on an issue\n")
+		default:
+			fmt.Printf("- Any other action was happened\n")
 		}
 	}
 }
