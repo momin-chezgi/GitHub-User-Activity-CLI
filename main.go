@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,16 @@ import (
 
 const neededArgs = 1
 
+type Event struct {
+	Type string `json:"type"`
+	Repo Repo   `json:"repo"`
+}
+
+type Repo struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
 func main() {
 	user, err := userName()
 	if err != nil {
@@ -17,35 +28,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	url := urlMaker(user)
-	req, err := http.NewRequest("GET", url, nil)
+	bodyBytes, err := getActivity(user)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	req.Header.Set("User-Agent", "github-user-activity")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil || resp == nil {
+	events := make([]Event, 0)
+	if err := json.Unmarshal(bodyBytes, &events); err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		fmt.Fprintf(os.Stderr, "An error occurred with the status code %v\n", resp.StatusCode)
-		os.Exit(1)
+	for _, e := range events {
+		fmt.Printf("%s: %s, (%s)\n", e.Type, e.Repo.Name, e.Repo.URL)
 	}
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		os.Exit(1)
-	}
-
-	fmt.Print(string(bodyBytes))
 }
 
 func userName() (string, error) {
@@ -64,4 +61,29 @@ func userName() (string, error) {
 
 func urlMaker(userName string) string {
 	return fmt.Sprintf("https://api.github.com/users/%v/events", userName)
+}
+
+func getActivity(userName string) ([]byte, error) {
+	url := urlMaker(userName)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", "github-user-activity")
+
+	resp, err := http.DefaultClient.Do(req)
+	if resp == nil {
+		return nil, err
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("An error occurred with the status code %v\n", resp.StatusCode))
+	}
+
+	defer resp.Body.Close()
+
+	out, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
