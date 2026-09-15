@@ -97,29 +97,30 @@ func getActivity(userName string) ([]byte, error) {
 }
 
 func eventSprinter(events []Event) string {
+	var out string
 	for _, e := range events {
 		switch e.Type {
 		case "PushEvent":
-			return fmt.Sprintf("- Pushed commits to		%v\n", e.Repo.Name)
+			out += fmt.Sprintf("- Pushed commits to		%v\n", e.Repo.Name)
 		case "IssuesEvent":
-			return fmt.Sprintf("- %v an issue in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
+			out += fmt.Sprintf("- %v an issue in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
 		case "WatchEvent":
-			return fmt.Sprintf("- Starred		%v\n", e.Repo.Name)
+			out += fmt.Sprintf("- Starred		%v\n", e.Repo.Name)
 		case "PullRequestEvent":
-			return fmt.Sprintf("- %v a pull request in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
+			out += fmt.Sprintf("- %v a pull request in		%v\n", capitalise(e.Payload.Action), e.Repo.Name)
 		case "CreateEvent":
-			return fmt.Sprintf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
+			out += fmt.Sprintf("- Created a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
 		case "DeleteEvent":
-			return fmt.Sprintf("- Deleted a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
+			out += fmt.Sprintf("- Deleted a %v in		%v \n", e.Payload.RefType, e.Repo.Name)
 		case "ForkEvent":
-			return fmt.Sprintf("- Forked		%v\n", e.Repo.Name)
+			out += fmt.Sprintf("- Forked		%v\n", e.Repo.Name)
 		case "IssueCommentEvent":
-			return fmt.Sprintf("- Commented on an issue in		%v\n", e.Repo.Name)
+			out += fmt.Sprintf("- Commented on an issue in		%v\n", e.Repo.Name)
 		default:
-			return fmt.Sprintf("- Other activity in %v \n", e.Repo.Name)
+			out += fmt.Sprintf("- Other activity in %v \n", e.Repo.Name)
 		}
 	}
-	return ""
+	return out
 }
 
 func urlMaker(userName string) string {
