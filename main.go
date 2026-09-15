@@ -39,6 +39,19 @@ func main() {
 	}
 
 	bodyBytes, header, err := getActivity(user)
+	if header.Get("X-RateLimit-Remaining") == "" {
+		minutesLeft, err := calNextReset(header.Get("X-RateLimit-Reset"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("GitHub rate limit is used up.")
+		if minutesLeft <= 1 {
+			fmt.Printf("Please wait a minute.\n")
+		} else {
+			fmt.Printf("You can wait till %v minutes from now to send the next request\n", minutesLeft)
+		}
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
@@ -52,19 +65,6 @@ func main() {
 
 	fmt.Printf(eventSprinter(events))
 	if len(events) == 0 {
-		if header.Get("X-RateLimit-Remaining") == "" {
-			minutesLeft, err := calNextReset(header.Get("X-RateLimit-Reset"))
-			if err != nil {
-				fmt.Fprintf(os.Stderr, err.Error())
-				os.Exit(1)
-			}
-			fmt.Printf("GitHub rate limit is used up.")
-			if minutesLeft <= 1 {
-				fmt.Printf("Please wait a minute.\n")
-			} else {
-				fmt.Printf("You can wait till %v minutes from now to send the next request\n", minutesLeft)
-			}
-		}
 		fmt.Println("No action has been made recently")
 	}
 }
@@ -93,7 +93,7 @@ func getActivity(userName string) ([]byte, http.Header, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if resp == nil {
-		return nil, resp.Header, errors.New("Connection failed!\n")
+		return nil, nil, errors.New("Network error: could not reach GitHub!\n")
 	}
 
 	defer resp.Body.Close()
