@@ -38,20 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	bodyBytes, header, err := getActivity(user)
-	if header.Get("X-RateLimit-Remaining") == "" {
-		minutesLeft, err := calNextReset(header.Get("X-RateLimit-Reset"))
-		if err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
-			os.Exit(1)
-		}
-		fmt.Printf("GitHub rate limit is used up.")
-		if minutesLeft <= 1 {
-			fmt.Printf("Please wait a minute.\n")
-		} else {
-			fmt.Printf("You can wait till %v minutes from now to send the next request\n", minutesLeft)
-		}
-	}
+	bodyBytes, err := getActivity(user)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
@@ -82,31 +69,49 @@ func userName() (string, error) {
 	return os.Args[neededArgs], nil
 }
 
-func getActivity(userName string) ([]byte, http.Header, error) {
+func getActivity(userName string) ([]byte, error) {
 	url := urlMaker(userName)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, nil, errors.New("Failed to make the request!\n")
+		return nil, errors.New("Failed to make the request!\n")
 	}
 
 	req.Header.Set("User-Agent", "github-user-activity")
 
 	resp, err := http.DefaultClient.Do(req)
 	if resp == nil {
-		return nil, nil, errors.New("Network error: could not reach GitHub!\n")
+		return nil, errors.New("Network error: could not reach GitHub!\n")
 	}
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == 429 {
+		remaining := resp.Header.Get("X-RateLimit-Remaining")
+		resetStr := resp.Header.Get("X-RateLimit-Reset")
+		if remaining == "0" && resetStr != "" {
+			minutes, err := calNextReset(resetStr)
+			if err != nil {
+				return nil, err
+			}
+			if minutes <= 1 {
+				return nil, errors.New("GitHub rate limit exceeded. Please wait a minute")
+			} else {
+				return nil, errors.New(fmt.Sprintf("GitHub rate limit exceeded. Please wait %v minutes and try again.\n", minutes))
+			}
+		}
+		return nil, errors.New("Access forbidden by GitHub (possible rate limit)\n")
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, resp.Header, errors.New(fmt.Sprintf("An error occurred with the status code %v\n", resp.StatusCode))
+		return nil, errors.New(fmt.Sprintf("An error occurred with the status code %v\n", resp.StatusCode))
 	}
 
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, resp.Header, errors.New("An error occurred at reading the response body!\n")
+		return nil, errors.New("An error occurred at reading the response body!\n")
 	}
-	return out, resp.Header, nil
+	return out, nil
+
 }
 
 func eventSprinter(events []Event) string {
