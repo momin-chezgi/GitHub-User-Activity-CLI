@@ -79,7 +79,7 @@ func getActivity(userName string) ([]byte, error) {
 	req.Header.Set("User-Agent", "github-user-activity")
 
 	resp, err := http.DefaultClient.Do(req)
-	if resp == nil {
+	if err != nil {
 		return nil, errors.New("Network error: could not reach GitHub!\n")
 	}
 
@@ -94,12 +94,16 @@ func getActivity(userName string) ([]byte, error) {
 				return nil, err
 			}
 			if minutes <= 1 {
-				return nil, errors.New("GitHub rate limit exceeded. Please wait a minute")
+				return nil, errors.New("GitHub rate limit exceeded. Please wait a minute\n")
 			} else {
 				return nil, errors.New(fmt.Sprintf("GitHub rate limit exceeded. Please wait %v minutes and try again.\n", minutes))
 			}
 		}
 		return nil, errors.New("Access forbidden by GitHub (possible rate limit)\n")
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, errors.New("GitHub user not found\n")
 	}
 
 	if resp.StatusCode != http.StatusOK {
