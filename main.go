@@ -15,15 +15,15 @@ import (
 const neededArgs = 1
 
 type Event struct {
-	Type      string  `json:"type"`
-	Repo      Repo    `json:"repo"`
-	CreatedAt string  `json:"created_at"`
-	Payload   Payload `json:"payload"`
+	Type string `json:"type"`
+	Repo Repo   `json:"repo"`
+	// CreatedAt string  `json:"created_at"`
+	Payload Payload `json:"payload"`
 }
 
 type Repo struct {
 	Name string `json:"name"`
-	URL  string `json:"url"`
+	// URL  string `json:"url"`
 }
 
 type Payload struct {
@@ -46,7 +46,7 @@ func main() {
 
 	events := make([]Event, 0)
 	if err := json.Unmarshal(bodyBytes, &events); err != nil {
-		fmt.Fprintf(os.Stderr, "Err: Cannot parse the JSON body")
+		fmt.Fprintf(os.Stderr, "Err: Cannot parse the JSON body\n")
 		os.Exit(1)
 	}
 
