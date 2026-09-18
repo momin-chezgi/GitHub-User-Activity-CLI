@@ -7,7 +7,7 @@ This project is inspired by https://roadmap.sh/projects/github-user-activity to 
 
 ## Installation
 ### Linux
-0. Clone the repository:
+1. Clone the repository:
 ```
 git clone https://github.com/momin-chezgi/GitHub-User-Activity-CLI.git
 ```
@@ -15,18 +15,18 @@ git clone https://github.com/momin-chezgi/GitHub-User-Activity-CLI.git
 ```
 go build -o github-user-activity
 ```
-2. Create the local binaries directory if it doesn't already exist:
+3. Create the local binaries directory if it doesn't already exist:
 ```
 mkdir -p ~/.local/bin
 ```
 
-3. Copy the executable to it:
+4. Copy the executable to it:
 ```
 cp github-user-activity ~/.local/bin/
 chmod +x ~/.local/bin/github-user-activity
 ```
 
-4. Add ~/.local/bin to your PATH:
+5. Add ~/.local/bin to your PATH:
 ```
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
@@ -39,18 +39,18 @@ github-user-activity
 
 
 ### Windows
-0. Clone the repository:
+1. Clone the repository:
 ```
 git clone https://github.com/momin-chezgi/GitHub-User-Activity-CLI.git
 cd GitHub-User-Activity-CLI
 ```
 
-1. Build the executable:
+2. Build the executable:
 ```
 go build -o github-user-activity.exe
 ```
 
-2. Run the program:
+3. Run the program:
 ```
 .\github-user-activity.exe
 ```
